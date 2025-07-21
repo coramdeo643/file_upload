@@ -94,7 +94,7 @@ public class UserController {
 	}
 
 	@PostMapping("/user/upload-profile-image")
-	public String uploadProfileImage(@RequestParam(name = "profileImage")MultipartFile multipartFile,
+	public String uploadProfileImage(@RequestParam(name = "profileImage") MultipartFile multipartFile,
 									 HttpSession session) {
 
 		// 인증 검사는 인터 셉터에서 처리
@@ -115,8 +115,14 @@ public class UserController {
 		return "redirect:/user/update-form";
 	}
 
-	@PutMapping("/user/delete-profile-image")
+	@PostMapping("/user/delete-profile-image")
 	public String deleteProfileImage(HttpSession session) {
+		User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+		// DB 경로를 null 처리하고 실제 파일도 삭제처리한다
+		User updateUser = userService.deleteProfileImage(sessionUser.getId());
+		// 세선 정보 업데이트 처리
+		session.setAttribute(Define.SESSION_USER, updateUser);
+
 		return "redirect:/user/update-form";
 	}
 }

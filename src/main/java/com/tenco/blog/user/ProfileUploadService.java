@@ -1,5 +1,6 @@
 package com.tenco.blog.user;
 
+import com.tenco.blog._core.errors.exception.Exception400;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,12 +66,12 @@ public class ProfileUploadService {
 		// 2. UUID(범용 고유 식별자)를 생성하고 앞의 8자리만 사용
 		String uuid = UUID.randomUUID().toString().substring(0, 8);
 		// 3. 최종 결과 : 20250721143022_1232acaadf.jpg
-		return  timestamp + "_" + uuid +  extension;
+		return timestamp + "_" + uuid + extension;
 	}
 
 	// 파일 확장자면 추출해 주는 메서드
 	private String getFileExtension(String originalFilename) {
-		if(originalFilename == null || originalFilename.lastIndexOf(".") == -1) {
+		if (originalFilename == null || originalFilename.lastIndexOf(".") == -1) {
 			return ""; // 확장자가 없으면 빈 문자열을 반환
 		}
 		// 마지막 점(.) 문자 이후의 문자열ㅇ르 확장자로 반환
@@ -80,20 +81,33 @@ public class ProfileUploadService {
 	}
 
 	// 폴더를 생성하는 메서드
-	private void createUploadDirectory() throws  IOException {
+	private void createUploadDirectory() throws IOException {
 		// window, linux
 		Path uploadPath = Paths.get(uploadDir);
 
 		// 디렉토리가 존재 하지 않으면 생성
 		// C:/uploads/profiles/ 경로가 없으면
-		if(Files.exists(uploadPath) == false) {
+		if (Files.exists(uploadPath) == false) {
 			// 여러 레벨의 디렉토리를 한번에 생성해 준다.
 			Files.createDirectories(uploadPath);
 		}
 	}
+
+	// profile Image 파일 삭제 메서드
+	public void deleteProfileImage(String imagePath) {
+		if (imagePath != null && imagePath.isEmpty() == false) {
+			try {
+				// uploads/profiles/202592480218490.png
+				// 1. 전체경로에서 파일명만 추출
+				String fileName = imagePath.substring(imagePath.lastIndexOf("/") + 1);
+				// 2. 실제 파일 시스템 경로 생성
+				Path filePath = Paths.get(uploadDir, fileName);
+				// 3. 파일이 존재하면 삭제하고 혹시 없으면 아무것도 안한다
+				Files.deleteIfExists(filePath);
+
+			} catch (IOException e) {
+				throw new Exception400("프로필 이미지 삭제에 실패했습니다");
+			}
+		}
+	}
 }
-
-
-
-
-
